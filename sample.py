@@ -3,6 +3,8 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.datasets import fetch_mldata
+from sklearn.cross_validation import train_test_split
 from chainer import cuda, Variable, Chain, optimizers
 import chainer.functions as F
 import chainer.links as L
