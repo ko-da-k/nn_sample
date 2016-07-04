@@ -10,7 +10,35 @@ import chainer.functions as F
 import chainer.links as L
 
 
-class MLP(Chain):
+class MLP3Layer(Chain):
+    """Multi Layer Perceptron"""
+
+    def __init__(self, n_units_1: int, n_units_2: int, n_units_3: int):
+        """
+        4層のパーセプトロン
+        :n_units_1: 入力層
+        :n_units_2: 中間層
+        :n_units_3: 出力層
+        """
+        super(MLP3Layer, self).__init__(
+            l1=L.Linear(n_units_1, n_units_2),
+            l2=L.Linear(n_units_2, n_units_3),
+        )
+
+    def __call__(self, x: Variable, t: Variable):
+        self.h1 = F.dropout(F.relu(self.l1(x)))
+        y = self.l2(self.h1)
+        return F.softmax_cross_entropy(y, t), y
+
+    def predict(self, test_x: np.ndarray):
+        test_x = Variable(test_x)
+        self.h1 = F.dropout(F.relu(self.l1(test_x)))
+        y = self.l2(self.h1)
+        predict_list = list(map(np.argmax, F.softmax(y).data))
+        return predict_list
+
+        
+class MLP4Layer(Chain):
     """Multi Layer Perceptron"""
 
     def __init__(self, n_units_1: int, n_units_2: int, n_units_3: int, n_units_4: int):
@@ -21,7 +49,7 @@ class MLP(Chain):
         :n_units_3: 中間層
         :n_units_4: 出力層
         """
-        super(MLP, self).__init__(
+        super(MLP4Layer, self).__init__(
             l1=L.Linear(n_units_1, n_units_2),
             l2=L.Linear(n_units_2, n_units_3),
             l3=L.Linear(n_units_3, n_units_4),
@@ -216,8 +244,8 @@ if __name__ == '__main__':
     n_units_3 = 100
     n_units_4 = len(list(set(train_label)))
 
-    # model = L.Classifier(MLP(n_units_1, n_units_2, n_units_3))  # 損失値を返すClassifierクラス
-    model = MLP(n_units_1, n_units_2, n_units_3, n_units_4)
+    # model = L.Classifier(MLP4Layer(n_units_1, n_units_2, n_units_3))  # 損失値を返すClassifierクラス
+    model = MLP4Layer(n_units_1, n_units_2, n_units_3, n_units_4)
     model = training(model, train, train_label, test, test_label, 100, 50, 50)
 
     ae = AutoEncoder(n_units_1, 500)
